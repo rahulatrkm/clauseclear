@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClauseClear — understand any contract before you sign it</title>
+<meta name="description" content="Paste a lease, freelance contract, job offer, NDA or terms of service and get a plain-English breakdown of the risky clauses, what's missing, and exactly what to push back on. Free. Nothing stored." />
+<meta name="theme-color" content="#0b1120" />
+<link rel="canonical" href="https://clauseclear-app.azurewebsites.net/" />
+<meta property="og:title" content="ClauseClear — understand any contract before you sign it" />
+<meta property="og:description" content="Plain-English contract review: the risky clauses, what's missing, and what to push back on. Free, nothing stored." />
+<meta property="og:type" content="website" />
+<style>
+  :root{
+    --bg:#0b1120; --bg2:#0f1729; --panel:#111a2e; --line:#22314f;
+    --fg:#eaf0fb; --muted:#93a3c0; --accent:#6ea8ff; --accent2:#9b7bff;
+    --high:#ff5d73; --med:#ffb454; --low:#3ad9a0; --gold:#ffd166;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:
+      radial-gradient(1000px 500px at 85% -8%,#1a2b4d 0,transparent 60%),
+      radial-gradient(900px 500px at 10% 0%,#171f3a 0,var(--bg) 55%);
+    background-color:var(--bg); color:var(--fg);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif; line-height:1.6}
+  .wrap{max-width:820px; margin:0 auto; padding:34px 20px 90px}
+  .badge{display:inline-flex; gap:8px; align-items:center; font-size:.74rem; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--accent); border:1px solid var(--line); background:rgba(110,168,255,.07); padding:5px 11px; border-radius:999px}
+  h1{font-size:2.3rem; line-height:1.14; margin:.35em 0 .2em; letter-spacing:-.5px}
+  h1 .g{background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lead{color:var(--muted); font-size:1.1rem; max-width:640px}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--bg2)); border:1px solid var(--line); border-radius:18px; padding:20px; margin-top:24px}
+  label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:8px}
+  .types{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+  .chip{border:1px solid var(--line); background:transparent; color:var(--fg); padding:8px 14px; border-radius:999px; cursor:pointer; font-size:.9rem; transition:.15s}
+  .chip.on{background:linear-gradient(90deg,var(--accent),var(--accent2)); border-color:transparent; color:#0b1120; font-weight:700}
+  textarea{width:100%; min-height:200px; resize:vertical; background:#0b1324; color:var(--fg); border:1px solid var(--line);
+    border-radius:12px; padding:14px; font-size:.95rem; font-family:ui-monospace,Menlo,monospace; line-height:1.5}
+  textarea:focus{outline:none; border-color:var(--accent)}
+  .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:14px}
+  .btn{border:0; cursor:pointer; font-weight:750; font-size:1.02rem; background:linear-gradient(90deg,var(--accent),var(--accent2));
+    color:#0b1120; padding:13px 24px; border-radius:12px}
+  .btn:disabled{opacity:.55; cursor:not-allowed}
+  .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--fg); font-weight:600}
+  .hint{color:var(--muted); font-size:.85rem}
+  .filelabel{color:var(--muted); font-size:.9rem; cursor:pointer; text-decoration:underline}
+  .disclaimer{color:var(--muted); font-size:.8rem; margin-top:10px}
+
+  /* results */
+  #out{margin-top:26px}
+  .hidden{display:none}
+  .gauge{display:flex; align-items:center; gap:20px; flex-wrap:wrap}
+  .score{--v:0; position:relative; width:120px; height:120px; border-radius:50%; flex:0 0 auto;
+    background:conic-gradient(var(--sc) calc(var(--v)*1%), #1b2540 0);}
+  .score::after{content:""; position:absolute; inset:10px; background:var(--panel); border-radius:50%}
+  .score b{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.9rem; font-weight:800; z-index:2}
+  .gauge .meta h2{margin:.1em 0}
+  .gauge .meta p{color:var(--muted); margin:.2em 0; max-width:520px}
+  .sec-title{margin:26px 0 10px; font-size:1.15rem; display:flex; align-items:center; gap:8px}
+  .clause{border:1px solid var(--line); border-left-width:4px; border-radius:12px; padding:14px 16px; margin:12px 0; background:#0d1526}
+  .clause.high{border-left-color:var(--high)}
+  .clause.medium{border-left-color:var(--med)}
+  .clause.low{border-left-color:var(--low)}
+  .clause .ct{display:flex; align-items:center; justify-content:space-between; gap:10px}
+  .clause h3{margin:0; font-size:1.03rem}
+  .sev{font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:999px; font-weight:800}
+  .sev.high{background:rgba(255,93,115,.16); color:var(--high)}
+  .sev.medium{background:rgba(255,180,84,.16); color:var(--med)}
+  .sev.low{background:rgba(58,217,160,.16); color:var(--low)}
+  .clause .kv{margin-top:8px}
+  .clause .kv b{color:var(--fg)} .clause .kv span{color:var(--muted)}
+  .clause .push{margin-top:8px; background:rgba(110,168,255,.08); border:1px solid var(--line); border-radius:10px; padding:9px 12px}
+  .clause .push b{color:var(--accent)}
+  ul.plain{list-style:none; padding:0; margin:6px 0}
+  ul.plain li{padding:9px 12px; border:1px solid var(--line); border-radius:10px; margin:7px 0; background:#0d1526}
+  ul.plain li::before{content:"→ "; color:var(--accent)}
+  .loading{display:flex; gap:12px; align-items:center; color:var(--muted)}
+  .spin{width:20px; height:20px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .err{background:rgba(255,93,115,.1); border:1px solid rgba(255,93,115,.35); color:#ffd5db; padding:12px 14px; border-radius:12px}
+  .steps{color:var(--muted); font-size:.9rem; margin-top:6px}
+  footer{margin-top:40px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:18px}
+  footer a{color:var(--accent)}
+  .trust{display:flex; gap:18px; flex-wrap:wrap; margin-top:14px; color:var(--muted); font-size:.85rem}
+  .trust span{display:inline-flex; gap:6px; align-items:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="badge">● Free · nothing stored · not legal advice</span>
+  <h1>Know what you're signing <span class="g">before</span> you sign it</h1>
+  <p class="lead">Paste a lease, freelance contract, job offer, NDA or terms of service. ClauseClear reads it and tells you — in plain English — the risky clauses, what's missing, and exactly what to push back on.</p>
+
+  <div class="trust">
+    <span>🔒 Your text isn't saved anywhere</span>
+    <span>⚡ Answer in ~15 seconds</span>
+    <span>🧠 AI-powered, plain-English</span>
+  </div>
+
+  <div class="panel">
+    <label>What kind of document is this?</label>
+    <div class="types" id="types">
+      <button class="chip on" data-t="">Auto-detect</button>
+      <button class="chip" data-t="residential lease">Lease / rental</button>
+      <button class="chip" data-t="freelance / contractor agreement">Freelance</button>
+      <button class="chip" data-t="employment offer">Job offer</button>
+      <button class="chip" data-t="NDA">NDA</button>
+      <button class="chip" data-t="terms of service">Terms of service</button>
+    </div>
+
+    <label>Paste the contract text</label>
+    <textarea id="text" placeholder="Paste the full contract or the clauses you're unsure about…"></textarea>
+    <div class="row">
+      <button class="btn" id="go">Review my contract →</button>
+      <input type="file" id="file" accept=".txt,.md,text/plain" class="hidden" />
+      <span class="filelabel" id="filepick">or upload a .txt file</span>
+      <span class="hint" id="count">0 characters</span>
+    </div>
+    <p class="disclaimer">ClauseClear is an AI assistant, not a lawyer, and this isn't legal advice. For anything important, have a professional review it. We don't store your text.</p>
+  </div>
+
+  <div id="out"></div>
+
+  <footer>
+    <b>ClauseClear</b> — a free, open-source contract explainer. AI-powered, nothing stored, not legal advice.
+    <a href="https://github.com/rahulatrkm/clauseclear" target="_blank" rel="noopener">Source on GitHub</a>.
+  </footer>
+</div>
+
+<script>
+"use strict";
+const $ = (s)=>document.querySelector(s);
+let docType = "";
+
+// type chips
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));
+  c.classList.add("on"); docType = c.dataset.t;
+}));
+
+const ta = $("#text");
+ta.addEventListener("input", ()=> $("#count").textContent = ta.value.length.toLocaleString()+" characters");
+
+$("#filepick").addEventListener("click", ()=> $("#file").click());
+$("#file").addEventListener("change", (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{ ta.value = r.result; ta.dispatchEvent(new Event("input")); };
+  r.readAsText(f);
+});
+
+const esc = (s)=> String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const scColor = (n)=> n>=70?"var(--high)": n>=40?"var(--med)":"var(--low)";
+
+function renderLoading(){
+  $("#out").innerHTML = `
+    <div class="panel">
+      <div class="loading"><div class="spin"></div><div>
+        <b>Reading your contract…</b>
+        <div class="steps" id="steps">Spotting clauses that matter</div>
+      </div></div>
+    </div>`;
+  const steps = ["Spotting clauses that matter","Decoding the legalese","Checking what's missing","Writing your pushback points"];
+  let i=0; const el=$("#steps");
+  const t=setInterval(()=>{ i=(i+1)%steps.length; if(el) el.textContent=steps[i]; else clearInterval(t); }, 2200);
+}
+
+function render(d){
+  const score = Math.max(0, Math.min(100, Math.round(d.risk_score ?? 0)));
+  const clauses = Array.isArray(d.clauses)? d.clauses : [];
+  const sevRank = {high:0,medium:1,low:2};
+  clauses.sort((a,b)=> (sevRank[a.severity]??3)-(sevRank[b.severity]??3));
+  const missing = Array.isArray(d.missing_protections)? d.missing_protections : [];
+  const questions = Array.isArray(d.questions_to_ask)? d.questions_to_ask : [];
+
+  let html = `<div class="panel">
+    <div class="gauge">
+      <div class="score" style="--v:${score}; --sc:${scColor(score)}"><b>${score}</b></div>
+      <div class="meta">
+        <h2>${esc(d.risk_label || (score>=70?"High risk":score>=40?"Moderate risk":"Lower risk"))}</h2>
+        <p>${esc(d.summary || "")}</p>
+      </div>
+    </div>`;
+
+  if(clauses.length){
+    html += `<div class="sec-title">⚠️ Clauses worth your attention</div>`;
+    for(const c of clauses){
+      const sev = ["high","medium","low"].includes(c.severity)? c.severity : "medium";
+      html += `<div class="clause ${sev}">
+        <div class="ct"><h3>${esc(c.title||"Clause")}</h3><span class="sev ${sev}">${sev}</span></div>
+        <div class="kv"><b>What it means:</b> <span>${esc(c.what_it_means||"")}</span></div>
+        <div class="kv"><b>Why it matters:</b> <span>${esc(c.why_it_matters||"")}</span></div>
+        ${c.suggested_pushback?`<div class="push"><b>Ask for this:</b> ${esc(c.suggested_pushback)}</div>`:""}
+      </div>`;
+    }
+  }
+  if(missing.length){
+    html += `<div class="sec-title">🕳️ Protections that seem to be missing</div><ul class="plain">`;
+    for(const m of missing) html += `<li>${esc(m)}</li>`;
+    html += `</ul>`;
+  }
+  if(questions.length){
+    html += `<div class="sec-title">💬 Questions to ask before you sign</div><ul class="plain">`;
+    for(const q of questions) html += `<li>${esc(q)}</li>`;
+    html += `</ul>`;
+  }
+  html += `<div class="row" style="margin-top:20px">
+      <button class="btn ghost" id="copy">Copy full report</button>
+      <button class="btn ghost" id="again">Review another</button>
+    </div>
+    <p class="disclaimer">${esc(d._disclaimer||"Not legal advice.")}</p>
+  </div>`;
+  $("#out").innerHTML = html;
+
+  $("#copy").addEventListener("click", ()=>{
+    const lines = [];
+    lines.push(`ClauseClear review — ${d.risk_label||""} (risk ${score}/100)`);
+    lines.push(d.summary||""); lines.push("");
+    clauses.forEach(c=>{ lines.push(`• [${c.severity}] ${c.title}`); lines.push(`  Means: ${c.what_it_means}`); lines.push(`  Matters: ${c.why_it_matters}`); if(c.suggested_pushback) lines.push(`  Ask: ${c.suggested_pushback}`); lines.push(""); });
+    if(missing.length){ lines.push("Missing protections:"); missing.forEach(m=>lines.push("  - "+m)); lines.push(""); }
+    if(questions.length){ lines.push("Questions to ask:"); questions.forEach(q=>lines.push("  - "+q)); }
+    lines.push(""); lines.push("Reviewed with ClauseClear (AI, not legal advice).");
+    navigator.clipboard.writeText(lines.join("\n")).then(()=>{ $("#copy").textContent="Copied ✓"; setTimeout(()=>$("#copy").textContent="Copy full report",1500); });
+  });
+  $("#again").addEventListener("click", ()=>{ $("#out").innerHTML=""; window.scrollTo({top:0,behavior:"smooth"}); ta.focus(); });
+  $("#out").scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+async function review(){
+  const text = ta.value.trim();
+  if(text.length < 40){ $("#out").innerHTML = `<div class="panel"><div class="err">Paste the full clause or document — that's too short to review well.</div></div>`; return; }
+  $("#go").disabled = true; renderLoading();
+  try{
+    const res = await fetch("/api/review", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({text, type:docType})
+    });
+    const data = await res.json();
+    if(!res.ok){ throw new Error(data.error || "Something went wrong."); }
+    render(data);
+  }catch(err){
+    $("#out").innerHTML = `<div class="panel"><div class="err">${esc(err.message)}</div>
+      <div class="row" style="margin-top:12px"><button class="btn ghost" id="retry">Try again</button></div></div>`;
+    const r=$("#retry"); if(r) r.addEventListener("click", review);
+  }finally{ $("#go").disabled = false; }
+}
+$("#go").addEventListener("click", review);
+</script>
+</body>
+</html>
