@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: clauseclear
+    runtime: python
+    plan: free
+    buildCommand: "pip install gunicorn"
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT --timeout 120 app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
