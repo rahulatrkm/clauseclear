@@ -5,7 +5,7 @@
 from __future__ import annotations
 import json, os, sys, urllib.request, urllib.error
 
-LIVE = "https://clauseclear-app.azurewebsites.net"
+LIVE = "https://clauseclear.onrender.com"
 REPO = "https://github.com/rahulatrkm/clauseclear"
 
 BODY = f"""\

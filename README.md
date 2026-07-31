@@ -4,7 +4,7 @@
 contract, job offer, NDA or terms of service and get a plain-English breakdown
 of the risky clauses, what's missing, and exactly what to push back on.
 
-👉 **Live:** https://clauseclear-app.azurewebsites.net
+👉 **Live:** https://clauseclear.onrender.com
 
 Most people sign contracts they don't fully understand — leases, gig-work
 agreements, NDAs, job offers — because a lawyer costs hundreds and the language
