@@ -57,7 +57,10 @@ SYSTEM_PROMPT = (
     "}\n\n"
     "Rules: be concrete (quote or paraphrase the actual terms). If the text is not "
     "a contract, set risk_score 0 and say so in summary. Never invent clauses that "
-    "are not present."
+    "are not present. Keep each field concise (one or two sentences) and limit to the "
+    "6 most important clauses so the response stays compact.\n\n"
+    "CRITICAL: Output ONLY the JSON object. Do NOT write any reasoning, preamble, "
+    "explanation or markdown. Your response MUST start with { and end with }."
 )
 
 
@@ -90,14 +93,26 @@ def _extract_json(text: str) -> dict | None:
         return json.loads(text)
     except json.JSONDecodeError:
         pass
-    # find first '{' and match braces
+    # find first '{' and match braces (ignoring braces inside strings)
     start = text.find("{")
     if start < 0:
         return None
     depth = 0
+    in_str = False
+    esc = False
     for i in range(start, len(text)):
         c = text[i]
-        if c == "{":
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+            continue
+        if c == '"':
+            in_str = True
+        elif c == "{":
             depth += 1
         elif c == "}":
             depth -= 1
@@ -106,37 +121,114 @@ def _extract_json(text: str) -> dict | None:
                 try:
                     return json.loads(candidate)
                 except json.JSONDecodeError:
-                    return None
+                    # last resort: strip trailing commas
+                    fixed = re.sub(r",\s*([}\]])", r"\1", candidate)
+                    try:
+                        return json.loads(fixed)
+                    except json.JSONDecodeError:
+                        return None
+    # never closed → JSON was truncated; try to repair it
+    return _repair_truncated(text[start:])
+
+
+def _repair_truncated(s: str) -> dict | None:
+    """Best-effort repair of JSON cut off mid-output (token limit)."""
+    s = s.rstrip()
+    # walk and track structure, closing what's open, ignoring strings
+    depth_stack = []
+    in_str = False
+    esc = False
+    last_safe = 0
+    for i, c in enumerate(s):
+        if in_str:
+            if esc:
+                esc = False
+            elif c == "\\":
+                esc = True
+            elif c == '"':
+                in_str = False
+                last_safe = i + 1
+            continue
+        if c == '"':
+            in_str = True
+        elif c in "{[":
+            depth_stack.append("}" if c == "{" else "]")
+        elif c in "}]":
+            if depth_stack:
+                depth_stack.pop()
+            last_safe = i + 1
+        elif c in "0123456789truefalsenul.-":
+            last_safe = i + 1
+    trimmed = s[:last_safe].rstrip().rstrip(",")
+    # if we were still inside a string, close it
+    closing = "".join(reversed(depth_stack))
+    for candidate in (trimmed + closing, trimmed + '"' + closing):
+        cand = re.sub(r",\s*([}\]])", r"\1", candidate)
+        try:
+            return json.loads(cand)
+        except json.JSONDecodeError:
+            continue
     return None
 
 
 def _call_gateway(contract: str, doc_type: str) -> dict:
     user = (
         f"Contract type the user believes this is: {doc_type or 'unspecified'}.\n\n"
-        f"Review the following contract text:\n\n{contract[:MAX_CHARS]}"
+        f"Review the following contract text and reply with ONLY the JSON object "
+        f"described above (no markdown, no commentary):\n\n{contract[:MAX_CHARS]}"
     )
-    req_body = json.dumps({
-        "model": MODEL,
-        "temperature": 0.2,
-        "max_tokens": 1600,
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user},
-        ],
-    }).encode("utf-8")
+    messages = [
+        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "user", "content": user},
+    ]
 
-    req = urllib.request.Request(
-        GATEWAY_URL, data=req_body, method="POST",
-        headers={"Content-Type": "application/json",
-                 "User-Agent": "clauseclear/1.0"},
-    )
-    with urllib.request.urlopen(req, timeout=90) as r:
-        data = json.loads(r.read().decode("utf-8"))
-    content = (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
-    parsed = _extract_json(content)
-    if parsed is None:
-        raise ValueError("The model returned an unparseable response. Try again.")
-    return parsed
+    last_err = None
+    for attempt in range(3):
+        body = {
+            "model": MODEL,
+            "temperature": 0.15 if attempt == 0 else 0.0,
+            "max_tokens": 4000,
+            "messages": messages,
+        }
+        # ask OpenAI-compatible gateways for strict JSON when supported
+        body["response_format"] = {"type": "json_object"}
+        req = urllib.request.Request(
+            GATEWAY_URL, data=json.dumps(body).encode("utf-8"), method="POST",
+            headers={"Content-Type": "application/json", "User-Agent": "clauseclear/1.0"},
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=90) as r:
+                data = json.loads(r.read().decode("utf-8"))
+        except urllib.error.HTTPError:
+            # some free models reject response_format — retry without it
+            body.pop("response_format", None)
+            req = urllib.request.Request(
+                GATEWAY_URL, data=json.dumps(body).encode("utf-8"), method="POST",
+                headers={"Content-Type": "application/json", "User-Agent": "clauseclear/1.0"},
+            )
+            with urllib.request.urlopen(req, timeout=90) as r:
+                data = json.loads(r.read().decode("utf-8"))
+
+        content = (data.get("choices") or [{}])[0].get("message", {}).get("content", "")
+        msg = (data.get("choices") or [{}])[0].get("message", {})
+        content = msg.get("content") or msg.get("reasoning") or ""
+        # strip <think> reasoning blocks some models emit
+        content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+        parsed = _extract_json(content)
+        if parsed is not None and isinstance(parsed, dict) and (
+            "clauses" in parsed or "summary" in parsed
+        ):
+            # coerce shape so the UI never breaks
+            parsed.setdefault("summary", "")
+            parsed.setdefault("risk_score", 0)
+            parsed.setdefault("clauses", [])
+            parsed.setdefault("missing_protections", [])
+            parsed.setdefault("questions_to_ask", [])
+            return parsed
+        last_err = content[:200]
+
+    raise ValueError("The AI had trouble analysing that. Please try again in a moment." +
+                     (f" [debug: {last_err!r}]" if os.environ.get("CLAUSECLEAR_DEBUG") else ""))
 
 
 def application(environ, start_response):
