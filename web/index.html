@@ -200,7 +200,7 @@ function render(d){
     </div>`;
 
   if(clauses.length){
-    html += `<div class="sec-title">⚠️ Clauses worth your attention</div>`;
+    html += `<div class="sec-title">⚠ Clauses worth your attention</div>`;
     for(const c of clauses){
       const sev = ["high","medium","low"].includes(c.severity)? c.severity : "medium";
       html += `<div class="clause ${sev}">
@@ -212,12 +212,12 @@ function render(d){
     }
   }
   if(missing.length){
-    html += `<div class="sec-title">🕳️ Protections that seem to be missing</div><ul class="plain">`;
+    html += `<div class="sec-title">Protections that seem to be missing</div><ul class="plain">`;
     for(const m of missing) html += `<li>${esc(m)}</li>`;
     html += `</ul>`;
   }
   if(questions.length){
-    html += `<div class="sec-title">💬 Questions to ask before you sign</div><ul class="plain">`;
+    html += `<div class="sec-title">Questions to ask before you sign</div><ul class="plain">`;
     for(const q of questions) html += `<li>${esc(q)}</li>`;
     html += `</ul>`;
   }
