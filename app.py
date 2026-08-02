@@ -231,6 +231,39 @@ def _call_gateway(contract: str, doc_type: str) -> dict:
                      (f" [debug: {last_err!r}]" if os.environ.get("CLAUSECLEAR_DEBUG") else ""))
 
 
+def _stream_llm(contract: str, doc_type: str):
+    user = (
+        f"Contract type the user believes this is: {doc_type or 'unspecified'}.\n\n"
+        f"Review the following contract text and reply with ONLY the JSON object "
+        f"described above (no markdown, no commentary):\n\n{contract[:MAX_CHARS]}"
+    )
+    body = {
+        "model": MODEL, "temperature": 0.15, "max_tokens": 4000, "stream": True,
+        "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                     {"role": "user", "content": user}],
+    }
+    req = urllib.request.Request(
+        GATEWAY_URL, data=json.dumps(body).encode(), method="POST",
+        headers={"Content-Type": "application/json", "Accept": "text/event-stream",
+                 "User-Agent": "clauseclear/1.0"})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        for raw in resp:
+            line = raw.decode("utf-8", "replace").strip()
+            if not line.startswith("data:"):
+                continue
+            payload = line[5:].strip()
+            if payload == "[DONE]":
+                return
+            try:
+                chunk = json.loads(payload)
+            except json.JSONDecodeError:
+                continue
+            delta = (chunk.get("choices") or [{}])[0].get("delta", {}) or {}
+            piece = delta.get("content") or delta.get("reasoning")
+            if piece:
+                yield piece
+
+
 def application(environ, start_response):
     method = environ.get("REQUEST_METHOD", "GET")
     path = environ.get("PATH_INFO", "/")
@@ -238,6 +271,46 @@ def application(environ, start_response):
     if method == "OPTIONS":
         start_response("204 No Content", _cors([("Content-Length", "0")]))
         return [b""]
+
+    if method == "POST" and path == "/api/review/stream":
+        try:
+            size = int(environ.get("CONTENT_LENGTH") or 0)
+        except (TypeError, ValueError):
+            size = 0
+        if size <= 0 or size > 200_000:
+            return _json_response(start_response, "400 Bad Request",
+                                  {"error": "Please paste some contract text."})
+        try:
+            payload = json.loads(environ["wsgi.input"].read(size).decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return _json_response(start_response, "400 Bad Request", {"error": "Invalid request."})
+        contract = (payload.get("text") or "").strip()
+        if len(contract) < 40:
+            return _json_response(start_response, "400 Bad Request",
+                                  {"error": "That's too short to review."})
+        start_response("200 OK", _cors([
+            ("Content-Type", "text/event-stream; charset=utf-8"),
+            ("Cache-Control", "no-cache, no-transform"),
+            ("X-Accel-Buffering", "no"),
+        ]))
+
+        def generate():
+            parts = []
+            try:
+                for piece in _stream_llm(contract, (payload.get("type") or "").strip()):
+                    parts.append(piece)
+                    yield b"data: " + json.dumps({"delta": piece}).encode() + b"\n\n"
+            except Exception as exc:
+                yield b"data: " + json.dumps({"error": str(exc)[:200]}).encode() + b"\n\n"
+                return
+            text = re.sub(r"<think>.*?</think>", "", "".join(parts), flags=re.DOTALL).strip()
+            result = _extract_json(text)
+            if isinstance(result, dict):
+                result.setdefault("_disclaimer",
+                                  "ClauseClear is an AI assistant, not a lawyer. This is not legal advice.")
+            yield b"data: " + json.dumps({"done": True, "result": result}).encode() + b"\n\n"
+
+        return generate()
 
     if path in ("/api/review",) and method == "POST":
         try:

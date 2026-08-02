@@ -5,83 +5,101 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>ClauseClear — understand any contract before you sign it</title>
 <meta name="description" content="Paste a lease, freelance contract, job offer, NDA or terms of service and get a plain-English breakdown of the risky clauses, what's missing, and exactly what to push back on. Free. Nothing stored." />
-<meta name="theme-color" content="#0b1120" />
+<meta name="color-scheme" content="light dark" />
 <link rel="canonical" href="https://clauseclear.onrender.com/" />
 <meta property="og:title" content="ClauseClear — understand any contract before you sign it" />
 <meta property="og:description" content="Plain-English contract review: the risky clauses, what's missing, and what to push back on. Free, nothing stored." />
 <meta property="og:type" content="website" />
 <style>
   :root{
-    --bg:#0b1120; --bg2:#0f1729; --panel:#111a2e; --line:#22314f;
-    --fg:#eaf0fb; --muted:#93a3c0; --accent:#6ea8ff; --accent2:#9b7bff;
-    --high:#ff5d73; --med:#ffb454; --low:#3ad9a0; --gold:#ffd166;
+    --bg:#ffffff; --surface:#ffffff; --raised:#fafafa;
+    --text:#111827; --text-2:#4b5563; --text-3:#6b7280;
+    --line:#e5e7eb; --line-2:#d1d5db;
+    --accent:#4338ca; --accent-soft:#eef2ff;
+    --good:#047857; --good-soft:#ecfdf5;
+    --warn:#b45309; --warn-soft:#fffbeb;
+    --bad:#b91c1c;  --bad-soft:#fef2f2;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
   }
-  *{box-sizing:border-box}
-  body{margin:0; background:
-      radial-gradient(1000px 500px at 85% -8%,#1a2b4d 0,transparent 60%),
-      radial-gradient(900px 500px at 10% 0%,#171f3a 0,var(--bg) 55%);
-    background-color:var(--bg); color:var(--fg);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif; line-height:1.6}
-  .wrap{max-width:820px; margin:0 auto; padding:34px 20px 90px}
-  .badge{display:inline-flex; gap:8px; align-items:center; font-size:.74rem; letter-spacing:.06em; text-transform:uppercase;
-    color:var(--accent); border:1px solid var(--line); background:rgba(110,168,255,.07); padding:5px 11px; border-radius:999px}
-  h1{font-size:2.3rem; line-height:1.14; margin:.35em 0 .2em; letter-spacing:-.5px}
-  h1 .g{background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent}
-  .lead{color:var(--muted); font-size:1.1rem; max-width:640px}
-  .panel{background:linear-gradient(180deg,var(--panel),var(--bg2)); border:1px solid var(--line); border-radius:18px; padding:20px; margin-top:24px}
-  label{font-size:.82rem; color:var(--muted); display:block; margin-bottom:8px}
-  .types{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
-  .chip{border:1px solid var(--line); background:transparent; color:var(--fg); padding:8px 14px; border-radius:999px; cursor:pointer; font-size:.9rem; transition:.15s}
-  .chip.on{background:linear-gradient(90deg,var(--accent),var(--accent2)); border-color:transparent; color:#0b1120; font-weight:700}
-  textarea{width:100%; min-height:200px; resize:vertical; background:#0b1324; color:var(--fg); border:1px solid var(--line);
-    border-radius:12px; padding:14px; font-size:.95rem; font-family:ui-monospace,Menlo,monospace; line-height:1.5}
-  textarea:focus{outline:none; border-color:var(--accent)}
-  .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:14px}
-  .btn{border:0; cursor:pointer; font-weight:750; font-size:1.02rem; background:linear-gradient(90deg,var(--accent),var(--accent2));
-    color:#0b1120; padding:13px 24px; border-radius:12px}
-  .btn:disabled{opacity:.55; cursor:not-allowed}
-  .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--fg); font-weight:600}
-  .hint{color:var(--muted); font-size:.85rem}
-  .filelabel{color:var(--muted); font-size:.9rem; cursor:pointer; text-decoration:underline}
-  .disclaimer{color:var(--muted); font-size:.8rem; margin-top:10px}
-
-  /* results */
-  #out{margin-top:26px}
-  .hidden{display:none}
-  .gauge{display:flex; align-items:center; gap:20px; flex-wrap:wrap}
-  .score{--v:0; position:relative; width:120px; height:120px; border-radius:50%; flex:0 0 auto;
-    background:conic-gradient(var(--sc) calc(var(--v)*1%), #1b2540 0);}
-  .score::after{content:""; position:absolute; inset:10px; background:var(--panel); border-radius:50%}
-  .score b{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:1.9rem; font-weight:800; z-index:2}
-  .gauge .meta h2{margin:.1em 0}
-  .gauge .meta p{color:var(--muted); margin:.2em 0; max-width:520px}
-  .sec-title{margin:26px 0 10px; font-size:1.15rem; display:flex; align-items:center; gap:8px}
-  .clause{border:1px solid var(--line); border-left-width:4px; border-radius:12px; padding:14px 16px; margin:12px 0; background:#0d1526}
-  .clause.high{border-left-color:var(--high)}
-  .clause.medium{border-left-color:var(--med)}
-  .clause.low{border-left-color:var(--low)}
-  .clause .ct{display:flex; align-items:center; justify-content:space-between; gap:10px}
-  .clause h3{margin:0; font-size:1.03rem}
-  .sev{font-size:.7rem; text-transform:uppercase; letter-spacing:.06em; padding:3px 9px; border-radius:999px; font-weight:800}
-  .sev.high{background:rgba(255,93,115,.16); color:var(--high)}
-  .sev.medium{background:rgba(255,180,84,.16); color:var(--med)}
-  .sev.low{background:rgba(58,217,160,.16); color:var(--low)}
-  .clause .kv{margin-top:8px}
-  .clause .kv b{color:var(--fg)} .clause .kv span{color:var(--muted)}
-  .clause .push{margin-top:8px; background:rgba(110,168,255,.08); border:1px solid var(--line); border-radius:10px; padding:9px 12px}
-  .clause .push b{color:var(--accent)}
-  ul.plain{list-style:none; padding:0; margin:6px 0}
-  ul.plain li{padding:9px 12px; border:1px solid var(--line); border-radius:10px; margin:7px 0; background:#0d1526}
-  ul.plain li::before{content:"→ "; color:var(--accent)}
-  .loading{display:flex; gap:12px; align-items:center; color:var(--muted)}
-  .spin{width:20px; height:20px; border:3px solid var(--line); border-top-color:var(--accent); border-radius:50%; animation:sp 1s linear infinite}
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0b0c0f; --surface:#131519; --raised:#181a1f;
+      --text:#f3f4f6; --text-2:#b6bcc7; --text-3:#8b93a1;
+      --line:#23262d; --line-2:#31353d;
+      --accent:#a5b4fc; --accent-soft:#1c1f34;
+      --good:#6ee7b7; --good-soft:#0f2620;
+      --warn:#fcd34d; --warn-soft:#2a2313;
+      --bad:#fca5a5;  --bad-soft:#2b1618;
+      --shadow:0 1px 2px rgba(0,0,0,.3);
+    }
+  }
+  *,*::before,*::after{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--text); font-size:16px; line-height:1.6;
+    font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
+  a{color:var(--accent)}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:4px}
+  .wrap{max-width:820px; margin:0 auto; padding:64px 24px 96px}
+  .badge,.kicker{display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:600;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--text-3); margin-bottom:18px}
+  .badge::before,.kicker::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--good)}
+  h1{font-size:clamp(2rem,4.6vw,2.9rem); line-height:1.1; font-weight:680; letter-spacing:-.03em; margin-bottom:16px}
+  h1 .g,h1 .grad{color:var(--accent); -webkit-text-fill-color:currentColor; background:none}
+  h2{font-size:1.2rem; font-weight:640; letter-spacing:-.015em}
+  .lead,.lede,.sub,.tag{color:var(--text-2); font-size:1.0625rem; max-width:60ch; line-height:1.65}
+  .trust{display:flex; gap:8px; flex-wrap:wrap; margin-top:22px}
+  .trust span{font-size:12.5px; font-weight:550; color:var(--text-2);
+    background:var(--raised); border:1px solid var(--line); padding:5px 11px; border-radius:20px}
+  .panel,.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px; margin-top:22px; box-shadow:var(--shadow)}
+  label{font-size:13px; color:var(--text-2); display:block; margin-bottom:7px; font-weight:600}
+  input,select,textarea{width:100%; background:var(--bg); color:var(--text); border:1px solid var(--line-2);
+    border-radius:9px; padding:11px 13px; font-size:15px; font-family:inherit; line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:none; border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft)}
+  textarea{min-height:150px; resize:vertical}
+  .btn{appearance:none; border:1px solid transparent; cursor:pointer; font:inherit; font-size:15px;
+    font-weight:600; background:var(--accent); color:#fff; padding:11px 20px; border-radius:9px;
+    transition:filter .15s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn:disabled{opacity:.5; cursor:not-allowed}
+  .btn.ghost{background:var(--surface); border-color:var(--line-2); color:var(--text)}
+  .btn.ghost:hover{border-color:var(--accent); color:var(--accent); filter:none}
+  .row,.bar,.opts,.actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center}
+  .hint,.disclaimer{color:var(--text-3); font-size:13px; margin-top:10px}
+  .sec-title,.sec{margin:20px 0 8px; font-size:13px; font-weight:650; color:var(--text);
+    letter-spacing:.01em; display:block}
+  ul.plain{list-style:none; padding:0; margin:0}
+  ul.plain li{padding:9px 12px; border:1px solid var(--line); border-radius:8px; margin:6px 0;
+    background:var(--raised); font-size:14.5px; color:var(--text-2)}
+  ul.plain li::before{content:none}
+  ul.warn li{border-left:3px solid var(--warn)}
+  .pill{display:inline-block; padding:5px 12px; border-radius:20px; font-weight:650; font-size:13px;
+    border:1px solid var(--line)}
+  .pill.ok{background:var(--good-soft); color:var(--good)}
+  .pill.bad{background:var(--bad-soft); color:var(--bad)}
+  .pill.mix{background:var(--warn-soft); color:var(--warn)}
+  .pill.na{background:var(--raised); color:var(--text-3)}
+  .jargon{display:flex; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:14.5px}
+  .jargon b{min-width:130px; color:var(--text)} .jargon span{color:var(--text-2)}
+  .loading{display:flex; gap:12px; align-items:center; color:var(--text-2); font-size:15px}
+  .spin{width:18px; height:18px; border:2px solid var(--line-2); border-top-color:var(--accent);
+    border-radius:50%; animation:sp .9s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
-  .err{background:rgba(255,93,115,.1); border:1px solid rgba(255,93,115,.35); color:#ffd5db; padding:12px 14px; border-radius:12px}
-  .steps{color:var(--muted); font-size:.9rem; margin-top:6px}
-  footer{margin-top:40px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--line); padding-top:18px}
-  footer a{color:var(--accent)}
-  .trust{display:flex; gap:18px; flex-wrap:wrap; margin-top:14px; color:var(--muted); font-size:.85rem}
-  .trust span{display:inline-flex; gap:6px; align-items:center}
+  .cursor{display:inline-block; width:2px; height:1em; background:var(--accent);
+    margin-left:2px; vertical-align:-2px; animation:blink 1s step-end infinite}
+  @keyframes blink{50%{opacity:0}}
+  .err{background:var(--bad-soft); border:1px solid var(--line); border-left:3px solid var(--bad);
+    color:var(--text); padding:13px 15px; border-radius:8px; font-size:14.5px}
+  .tldr{font-size:1.125rem; font-weight:600; line-height:1.5; letter-spacing:-.01em}
+  .hidden{display:none}
+  footer{margin-top:56px; padding-top:24px; color:var(--text-3); font-size:13.5px;
+    border-top:1px solid var(--line)}
+  .visually-hidden,.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap}
+  @media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+
 </style>
 </head>
 <body>
@@ -91,9 +109,9 @@
   <p class="lead">Paste a lease, freelance contract, job offer, NDA or terms of service. ClauseClear reads it and tells you — in plain English — the risky clauses, what's missing, and exactly what to push back on.</p>
 
   <div class="trust">
-    <span>🔒 Your text isn't saved anywhere</span>
-    <span>⚡ Answer in ~15 seconds</span>
-    <span>🧠 AI-powered, plain-English</span>
+    <span> Your text isn't saved anywhere</span>
+    <span> Answer in ~15 seconds</span>
+    <span> AI-powered, plain-English</span>
   </div>
 
   <div class="panel">
@@ -110,7 +128,7 @@
     <label>Paste the contract text</label>
     <textarea id="text" placeholder="Paste the full contract or the clauses you're unsure about…"></textarea>
     <div class="row">
-      <button class="btn" id="go">Review my contract →</button>
+      <button class="btn" id="go">Review my contract </button>
       <input type="file" id="file" accept=".txt,.md,text/plain" class="hidden" />
       <span class="filelabel" id="filepick">or upload a .txt file</span>
       <span class="hint" id="count">0 characters</span>
@@ -225,17 +243,43 @@ function render(d){
   $("#out").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
+// Streams the review so the first words appear in ~2s instead of ~19s.
+async function streamReview(body, onText){
+  const res = await fetch("/api/review/stream", {method:"POST",
+    headers:{"Content-Type":"application/json"}, body:JSON.stringify(body)});
+  if(!res.ok || !res.body){
+    const d = await res.json().catch(()=>({}));
+    throw new Error(d.error || "Something went wrong.");
+  }
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf="", text="", result=null;
+  while(true){
+    const {done, value} = await reader.read();
+    if(done) break;
+    buf += dec.decode(value, {stream:true});
+    const parts = buf.split("\n\n"); buf = parts.pop() || "";
+    for(const part of parts){
+      const line = part.trim();
+      if(!line.startsWith("data:")) continue;
+      let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
+      if(ev.error) throw new Error(ev.error);
+      if(ev.delta){ text += ev.delta; onText(text); }
+      if(ev.done) result = ev.result;
+    }
+  }
+  if(!result) throw new Error("The AI response was incomplete. Please try again.");
+  return result;
+}
+
 async function review(){
   const text = ta.value.trim();
   if(text.length < 40){ $("#out").innerHTML = `<div class="panel"><div class="err">Paste the full clause or document — that's too short to review well.</div></div>`; return; }
   $("#go").disabled = true; renderLoading();
   try{
-    const res = await fetch("/api/review", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({text, type:docType})
+    const data = await streamReview({text, type:docType}, raw => {
+      const m = raw.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)/);
+      if(m) $("#out").innerHTML = `<div class="panel"><p class="tldr">${esc(m[1].replace(/\\"/g,'"'))}<span class="cursor"></span></p></div>`;
     });
-    const data = await res.json();
-    if(!res.ok){ throw new Error(data.error || "Something went wrong."); }
     render(data);
   }catch(err){
     $("#out").innerHTML = `<div class="panel"><div class="err">${esc(err.message)}</div>
