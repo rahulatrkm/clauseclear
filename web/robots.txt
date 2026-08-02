@@ -1,0 +1,6 @@
+# Free to use and meant to be found.
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://clauseclear.onrender.com/sitemap.xml

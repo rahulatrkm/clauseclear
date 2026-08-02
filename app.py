@@ -361,6 +361,7 @@ def application(environ, start_response):
                 ctype = ("text/html; charset=utf-8" if rel.endswith(".html")
                          else "image/png" if rel.endswith(".png")
                          else "image/svg+xml" if rel.endswith(".svg")
+                         else "application/xml" if rel.endswith(".xml")
                          else "text/plain; charset=utf-8")
                 body = fp.read_bytes()
                 start_response("200 OK", _cors([("Content-Type", ctype),
